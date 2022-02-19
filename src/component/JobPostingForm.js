@@ -12,35 +12,86 @@ const INITIAL_STATE = {
   location: [],
   mustHaveSkills: [],
   yearsOfExperience: 3,
-  categories: [],
+  category: [],
   EmploymentType: [],
 };
 
 const JobPostingForm = () => {
   const [state, setState] = useState(INITIAL_STATE);
   const [validated, setValidated] = useState(false);
+  const [isLoc, setIsloc] = useState(true);
+  const [isCat, setIsCat] = useState(true);
+  const [isSkill, setIsSkill] = useState(true);
+  const [isEmp, setIsEmp] = useState(true);
   const locations = data.locations;
   const skills = data.skills;
   const categoryList = data.categoryList;
   const EmploymentType = data.EmploymentType;
 
-  useEffect(() => {
-    console.log(state);
-  }, [state]);
+  const locationHandler = (e) => {
+    setIsloc(true);
+    setState((prev) => {
+      return {
+        ...prev,
+        location: e,
+      };
+    });
+  };
+
+  const categoryHandler = (e) => {
+    setIsCat(true);
+    setState((prev) => {
+      return { ...prev, category: e };
+    });
+  };
+
+  const skillsHandler = (e) => {
+    setIsSkill(true);
+    setState((prev) => {
+      return {
+        ...prev,
+        mustHaveSkills: e,
+      };
+    });
+  };
+
+  const employmentTypeHandler = (e) => {
+    setIsEmp(true);
+    setState((prev) => {
+      return {
+        ...prev,
+        EmploymentType: e,
+      };
+    });
+  };
 
   const handleSubmit = (event) => {
-    event.preventDefault();
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
+      event.preventDefault();
       event.stopPropagation();
     }
-    if (state.categories.length < 0) {
-      setValidated(false);
+    if (state.category.length === 0) {
+      setIsCat(false);
+    }
+
+    if (state.location.length === 0) {
+      setIsloc(false);
+    }
+    if (state.EmploymentType.length === 0) {
+      setIsEmp(false);
+    }
+    if (state.mustHaveSkills.length === 0) {
+      setIsSkill(false);
     }
     const obj = state;
     console.log("final " + JSON.stringify(state));
 
     setValidated(true);
+    axios
+      .post("/localhost:8001/v1jobs/job", obj)
+      .then((res) => console.log(res))
+      .catch((e) => console.log(e));
   };
 
   return (
@@ -69,16 +120,10 @@ const JobPostingForm = () => {
               required
               options={locations}
               value={state.location}
-              onChange={(e) => {
-                setState((prev) => {
-                  return {
-                    ...prev,
-                    location: e,
-                  };
-                });
-              }}
+              onChange={locationHandler}
               isMulti={true}
             />
+            {!isLoc && <label className="invalid">required</label>}
 
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
@@ -126,14 +171,11 @@ const JobPostingForm = () => {
             <Select
               required
               options={categoryList}
-              value={state.categories}
-              onChange={(e) => {
-                setState((prev) => {
-                  return { ...prev, categories: e };
-                });
-              }}
+              value={state.category}
+              onChange={categoryHandler}
               isMulti={true}
             />
+            {!isCat && <label className="invalid">required</label>}
 
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
@@ -146,38 +188,27 @@ const JobPostingForm = () => {
               required
               options={skills}
               value={state.mustHaveSkills}
-              onChange={(e) => {
-                setState((prev) => {
-                  return {
-                    ...prev,
-                    mustHaveSkills: e,
-                  };
-                });
-              }}
+              onChange={skillsHandler}
               isMulti={true}
             />
+            {!isSkill && <label className="invalid">required</label>}
+
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group as={Col} md="4" controlId="validationCustom01">
             <Form.Label style={{ fontWeight: "bold" }}>
-              {" "}
               Employment Type
             </Form.Label>
             <Select
               required
               options={EmploymentType}
               value={state.EmploymentType}
-              onChange={(e) => {
-                setState((prev) => {
-                  return {
-                    ...prev,
-                    EmploymentType: e,
-                  };
-                });
-              }}
+              onChange={employmentTypeHandler}
               isMulti={true}
             />
+            {!isEmp && <label className="invalid">required</label>}
+
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
         </Row>
